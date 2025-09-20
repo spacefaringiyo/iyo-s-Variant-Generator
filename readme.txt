@@ -50,3 +50,5 @@ This project is licensed under the MIT License
 0.2 - added multi bot support
 0.3 - accounted for the case where Sce file name and Name= inside the file doesn't match up
 0.4 - fixed weapon disabling bug in 0.3 - improvement in 0.3 is still applied
+0.5 - displays the all the detected modifiers. editable mod tag. settings profiles.
+
