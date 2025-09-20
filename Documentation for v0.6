@@ -1,0 +1,119 @@
+iyo's Variant Generator: Technical Specification (v1.3)
+1. High-Level Intent
+
+This application is a standalone GUI tool designed to automate the creation of variants for KovaaK's .sce scenario files. The primary goal is to provide a highly efficient and user-friendly interface to perform what would otherwise be a tedious, error-prone manual text-editing process. It allows users to create multiple versions of a scenario with modified difficulty parameters in a single batch operation, manage different settings via profiles, and intuitively find and load scenarios without manual typing.
+2. The Domain: Understanding KovaaK's .sce Files
+
+(This section remains accurate and unchanged from the previous documentation.)
+
+    Format: A plain text file, similar in structure to an .ini file, with key-value pairs (e.g., Timelimit=60.0).
+
+    Structure: The file has two main parts:
+
+        Global Properties: At the top of the file, before any [...] sections, are global settings like Name=, Timescale=, etc.
+
+        Sections: Further down, the file is divided into sections denoted by square brackets (e.g., [Character Profile]).
+
+    The "Player vs. Bot" Logic: The application identifies the player's profile via PlayerCharacters= and assumes all other [Character Profile] sections belong to target bots.
+
+    Key Challenge - Name Mismatch: The application is explicitly designed to handle cases where a scenario's filename does not match the Name= property inside the file, treating the user-provided filename as the source of truth for creating new variants.
+
+3. Core Architecture
+
+The application continues to use a Controller-Engine-Model pattern.
+
+    The Controller (VariantGeneratorApp): This Tkinter class has seen significant evolution. Its responsibilities now include:
+
+        Scenario Discovery: Managing a tk.Listbox that displays all .sce files from the selected folder.
+
+        Live Filtering: Using a trace on the scenario_name_var to filter the listbox in real-time as the user types.
+
+        Smart Auto-Loading: Orchestrating the "debouncing" mechanism (root.after) to automatically load a scenario when the user pauses typing a valid filename. It also handles instant loading when an item is selected from the listbox.
+
+        UI State Management: Managing settings profiles, the "Edit Mode" for variant values, and updating all UI elements in response to events.
+
+        Event Handling: Capturing all user input and calling the appropriate backend Engine functions.
+
+    The Engine (Standalone Functions): These core logic functions (parse_scenario_file, create_variant_file, etc.) remain decoupled from the UI.
+
+        They are "section-aware," ensuring modifications are only applied in the correct context (e.g., the global Name= vs. a Name= inside a [Weapon Profile]).
+
+        They contain the "player-exclusion" logic to modify all non-player character profiles.
+
+    The Model (settings.json): This external JSON file serves as the persistent data model.
+
+        Profile-Based Structure: All user settings (values, custom tags, checkbox states, folder path) are stored within named profiles.
+
+        State Management: The file stores the last_active_profile to ensure the user's most recent setup is loaded on startup.
+
+        Migration: The load_settings function remains capable of migrating older, non-profile-based settings files into the new structure.
+
+4. Data Flow Walkthrough: A "Scenario Selection" Event
+
+The previous "Generate" event flow is still valid, but the more complex and central workflow is now the selection and loading of a scenario, which has replaced the manual "Load" button.
+
+This event is triggered in two ways:
+
+Path A: User Clicks an Item in the Listbox
+
+    User Action: User clicks a scenario name in the tk.Listbox.
+
+    Controller (_on_listbox_select):
+
+        The <<ListboxSelect>> event fires.
+
+        The function gets the text of the selected item.
+
+        It cancels any pending "smart delay" load to prevent a double-load.
+
+        It sets the scenario_name_var to the selected name.
+
+        It immediately calls the _on_load function.
+
+Path B: User Types/Pastes into the Entry Box
+
+    User Action: User types a character or pastes text into the tk.Entry.
+
+    Controller (_schedule_load_from_entry):
+
+        The trace on scenario_name_var fires this function.
+
+        It first calls _update_filtered_list to update the listbox in real-time.
+
+        It cancels any previously scheduled load (self._after_id).
+
+        It schedules the _on_load function to run in 500ms, storing the timer ID in self._after_id.
+
+    Loop: If the user continues typing, this process repeats, constantly pushing the scheduled load 500ms into the future.
+
+    User Pauses: When the user stops typing for 500ms, the _on_load function is finally allowed to execute.
+
+The _on_load Function (The Destination for Both Paths)
+
+    Input Sanitization: It gets the text from scenario_name_var and uses .strip() to remove any leading/trailing whitespace.
+
+    Silent Pre-Check: It constructs the full file path and performs a silent os.path.exists() check. If the file does not exist (e.g., the name is incomplete), the function exits immediately and silently. No error is shown.
+
+    Engine Call: If the file exists, it calls parse_scenario_file().
+
+    UI Update: If parsing is successful, it updates the loaded_scenario_data and populates the "Detected Base Stats" section, including setting the prominent, large-font scenario name label. The "Generate Variants" button is enabled.
+
+    Error Handling: If parse_scenario_file fails (returns None), it shows a user-friendly error message indicating the file might be corrupt.
+
+5. Extensibility Guide
+
+(This section remains accurate and unchanged.)
+
+To add a new percentage-based modifier (e.g., "Gravity"):
+
+    Engine (parse_scenario_file): In the [Character Profile] parsing loop, add a new elif to read the Gravity= value and store it.
+
+    Engine (create_variant_file): In the [Character Profile] modification block, add an elif variant_type == "Gravity" condition to replace the Gravity= line.
+
+    UI (VariantGeneratorApp):
+
+        load_settings: Add a default "Gravity" tag to the variant_tags dictionary in get_default_profile.
+
+        _load_profile: Add "GRAVITY" to the main variant_configs dictionary.
+
+        _on_settings_change: Add a line to save the "Gravity" values and tag to the active profile.
