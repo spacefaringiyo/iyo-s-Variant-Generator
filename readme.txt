@@ -1,4 +1,4 @@
-# iyo's Variant Generator 0.2
+# iyo's Variant Generator 0.4
 
 A user-friendly desktop application for quickly and easily creating multiple variants of KovaaK's scenario files. This tool is for scenario creators who want to generate different difficulty levels (e.g., smaller/larger targets, faster/slower bots) without manually editing `.sce` files.
 
@@ -48,4 +48,5 @@ This project is licensed under the MIT License
 ## Changelog
 0.1 - base
 0.2 - added multi bot support
+
 0.3 - accounted for the case where Sce file name and Name= inside the file doesn't match up
