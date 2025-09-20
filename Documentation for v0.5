@@ -1,0 +1,111 @@
+iyo's Variant Generator: Technical Specification (v0.5)
+1. High-Level Intent
+
+This application is a standalone GUI tool designed to automate the creation of variants for KovaaK's .sce scenario files. The primary goal is to provide a user-friendly interface to perform what would otherwise be a tedious, error-prone manual text-editing process. It allows users to create multiple versions of a scenario with modified difficulty parameters (e.g., target size, speed, game duration) in a single batch operation.
+2. The Domain: Understanding KovaaK's .sce Files
+
+To understand the application's code, one must first understand the structure of a .sce file. A developer new to KovaaK's should consider the following:
+
+    Format: It is a plain text file, similar in structure to an .ini file. It consists of key-value pairs (e.g., Timelimit=60.0).
+
+    Structure: The file has two main parts:
+
+        Global Properties: At the top of the file, there are global settings for the scenario, such as the main Name=, Timescale=, and Timelimit=.
+
+        Sections: Further down, the file is divided into sections denoted by square brackets (e.g., [Character Profile], [Weapon Profile]). Each section contains properties relevant to that context.
+
+    The "Player vs. Bot" Logic: The core of our modification logic relies on identifying which [Character Profile] belongs to the human player and which belong to the targets (bots). Our application uses the following robust method:
+
+        It reads the PlayerCharacters=Player line to identify the exact name of the player's profile (in this case, "Player").
+
+        It then assumes that any other [Character Profile] section in the file belongs to a target bot. This is a simple but powerful heuristic that works for all scenarios, from one bot to dozens.
+
+    Key Challenge - Name Mismatch: A critical real-world issue is that the scenario's filename (e.g., My Scenario S1.sce) often does not match the Name= property inside the file (e.g., Name=My Scenario S2). Our application is explicitly designed to handle this by treating the user-provided filename as the "source of truth" for naming new variants, while using the internal Name= field as the target for the find-and-replace operation.
+
+3. Core Architecture
+
+The application uses a Controller-Engine-Model pattern.
+
+    The Controller (VariantGeneratorApp): This is the main Tkinter class that builds and manages the entire GUI. It is responsible for:
+
+        Capturing all user input (button clicks, text entry, dropdown selections).
+
+        Managing the UI state (e.g., switching to "Edit Mode").
+
+        Calling the appropriate backend Engine functions in response to user events.
+
+        Loading and managing the settings profiles.
+
+    The Engine (Standalone Functions): These are the core logic functions (parse_scenario_file, create_variant_file, etc.) that are completely decoupled from the UI.
+
+        They perform all file I/O and data manipulation.
+
+        They are "section-aware" and understand the structure of a .sce file, ensuring modifications are only applied in the correct context (e.g., only changing the main Name=, not a Name= inside a weapon profile).
+
+        They contain the "player-exclusion" logic to modify all non-player character profiles.
+
+    The Model (settings.json): This external JSON file serves as the persistent data model for all user customizations.
+
+        Profile-Based Structure: The file is built around a dictionary of profiles. Each profile is a self-contained settings object that stores all values, custom tags, checkbox states, and the KovaaK's folder path.
+
+        State Management: The file also stores the last_active_profile so the application can load the user's most recent setup on startup.
+
+        Migration: The load_settings function is designed to detect older, non-profile-based settings.json files and automatically migrate them into the new structure under a "Default" profile.
+
+4. Data Flow Walkthrough: A "Generate" Event
+
+A typical "Generate Variants" operation follows this data flow:
+
+    User Action: The user clicks the "Generate Variants" button.
+
+    Controller (_on_generate):
+
+        Verifies that scenario data has been loaded.
+
+        Reads the state of all checkboxes to build a tasks list of variants to create (e.g., [("Size", 80), ("Speed", 120)]).
+
+        Initializes the progress bar and the overwrite decision state.
+
+    Engine Call (Loop): The controller iterates through the tasks list. In each iteration, it calls the create_variant_file() engine function, passing all necessary data, including the loaded scenario data and the entire variant_configs object.
+
+    Engine (create_variant_file):
+
+        Receives the base data. It pulls the user-provided name (the "true" name) and the internal scenario name (the "replace target").
+
+        It uses the user-provided name and the custom tags from variant_configs to calculate the new variant's filename and internal name.
+
+        It iterates through a copy of the original file's lines, keeping track of which section it is currently in.
+
+        Modification - Globals: If it is not inside a section (in_any_section == False), it looks for and replaces the main Name= line and other global properties like Timescale= or Timelimit=.
+
+        Modification - Bots: If it is inside a [Character Profile] section that is not the player's profile, it modifies the relevant properties (MainBBRadius, MaxSpeed, etc.).
+
+        It writes the newly constructed list of lines to a new .sce file.
+
+        It returns a status code ("success", "error", etc.).
+
+    Controller (_on_generate):
+
+        Receives the status code from the engine.
+
+        Updates the progress bar and the success/failure count.
+
+        Continues until all tasks are complete.
+
+5. Extensibility Guide
+
+To add a new percentage-based modifier (e.g., "Gravity"):
+
+    Engine (parse_scenario_file): In the [Character Profile] parsing loop, add a new elif to read the Gravity= value and store it in the character_profiles dictionary for each profile.
+
+    Engine (create_variant_file): In the [Character Profile] modification block, add an elif variant_type == "Gravity" condition. Inside, add the logic to calculate and replace the Gravity= line with the new value.
+
+    UI (VariantGeneratorApp):
+
+        load_settings: Add a default "Gravity" tag to the variant_tags dictionary.
+
+        _load_profile: Add "GRAVITY" to the main variant_configs dictionary, pulling its values and tag from the loaded profile data.
+
+        _on_settings_change: Add a line to save the "Gravity" values and tag to the active profile.
+
+Thanks to the data-driven UI construction, these changes are all that is needed. The application will automatically create the new column, the editable header, and handle the save/load logic.
