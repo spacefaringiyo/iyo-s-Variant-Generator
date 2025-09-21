@@ -1,0 +1,10 @@
+1. you should be able to shoot weapon (some of the old version aka v0.3 was overriding weapon profile)
+2. all the enemy bots must be modified in scenario with multiple bots 
+3. duration of the scenario should be same as original (unless duration variants)
+4. in duration variants, the theoretical max score should be same as original
+5. timescale variant should have same duration as the original scenario (this is problem in v0.7)
+
+
+
+things to note
+1. kovaak's does ingame calculation to display actual value player experience in game - this is different to what's written inside sce file.
