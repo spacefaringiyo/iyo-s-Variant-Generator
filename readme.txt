@@ -42,7 +42,7 @@ You can click the **"Edit Values"** button to change the percentage and duration
 -   moxy for testing and suggesting reload scenario folder after generation
 
 -   testing / using during development process
-    にしろうさん, xvv
+    tilt, にしろうさん, xvv
 
 
 ## License
@@ -60,5 +60,6 @@ This project is licensed under the MIT License
 0.6 - search list update
 0.7 - fixed adaptability to timescaled scenarios
 0.8 - timescale variant is now score adjusted. different setting saves for each variant edits. reload scenario folder after generation. Language toggle added - supports EN and JP
+
 
 
