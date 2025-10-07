@@ -60,7 +60,8 @@ This project is licensed under the MIT License
 0.6 - search list update
 0.7 - fixed adaptability to timescaled scenarios
 0.8 - timescale variant is now score adjusted. different setting saves for each variant edits. reload scenario folder after generation. Language toggle added - supports EN and JP
-0.9 - added character selector
+0.9 - added character selector. thanks to Salzi for suggesting this feature and how it is needed.
+
 
 
 
