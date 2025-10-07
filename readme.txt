@@ -1,4 +1,4 @@
-# iyo's Variant Generator 0.8
+# iyo's Variant Generator 0.9
 
 A user-friendly desktop application for quickly and easily creating multiple variants of KovaaK's scenario files. This tool is for scenario creators who want to generate different difficulty levels (e.g., smaller/larger targets, faster/slower bots) without manually editing `.sce` files.
 
@@ -60,6 +60,7 @@ This project is licensed under the MIT License
 0.6 - search list update
 0.7 - fixed adaptability to timescaled scenarios
 0.8 - timescale variant is now score adjusted. different setting saves for each variant edits. reload scenario folder after generation. Language toggle added - supports EN and JP
+0.9 - added character selector
 
 
 
