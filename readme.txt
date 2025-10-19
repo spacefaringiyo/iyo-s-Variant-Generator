@@ -41,9 +41,8 @@ You can click the **"Edit Values"** button to change the percentage and duration
 -   Salzi for giving me heads up on unaccounted for issues & providing suggestions / recouces
 -   moxy for testing and suggesting reload scenario folder after generation
 
--   testing / using during development process
-    tilt, にしろうさん, xvv
-
+-   testing / user feedback during development process.
+    tilt, にしろうさん, xvv, Bayeol, keanu
 
 ## License
 
@@ -61,6 +60,7 @@ This project is licensed under the MIT License
 0.7 - fixed adaptability to timescaled scenarios
 0.8 - timescale variant is now score adjusted. different setting saves for each variant edits. reload scenario folder after generation. Language toggle added - supports EN and JP
 0.9 - added character selector. thanks to Salzi for suggesting this feature and how it is needed.
+
 
 
 
