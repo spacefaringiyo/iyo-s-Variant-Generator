@@ -4,7 +4,7 @@
 -   Special thanks to Corporate Serf for providing feedbacks and suggestions at a very early stage about radius vs global size multiplier and speed vs global speed vs tScale
 -   Salzi for giving me heads up on unaccounted for issues & providing suggestions / recouces
 -   moxy for testing and suggesting reload scenario folder after generation
--   Felipe Reis for reporting an issue where the app didn't take gauntlet scenarios into account
+-   Felipe Reis for reporting an issue where the app didn't take gauntlet scenarios into account and testing the app to discover that the app was vertically too large.
 
 -   testing / user feedback during development process.
     tilt, にしろうさん, xvv, Bayeol, keanu, xlandkさん and many others...
