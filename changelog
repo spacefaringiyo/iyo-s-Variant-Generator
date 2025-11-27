@@ -1,0 +1,12 @@
+## Changelog
+0.1 - base
+0.2 - added multi bot support
+0.3 - accounted for the case where Sce file name and Name= inside the file doesn't match up
+0.4 - fixed weapon disabling bug in 0.3 - improvement in 0.3 is still applied
+0.5 - displays the all the detected modifiers. editable mod tag. settings profiles.
+0.6 - search list update
+0.7 - fixed adaptability to timescaled scenarios
+0.8 - timescale variant is now score adjusted. different setting saves for each variant edits. reload scenario folder after generation. Language toggle added - supports EN and JP
+0.9 - added character selector. thanks to Salzi for suggesting this feature and how it is needed.
+0.10 - headsize edit, UI overhault & background image support
+0.11 - logic accounts for gauntlet type scenarios. thanks to Felipe Reis for reporting this issue, and testing the app to discover that the app was vertically too large.
