@@ -2,7 +2,7 @@
 
 LANGUAGES = {
     "EN": {
-        "window_title": "iyo's Variant Generator",
+        "window_title": "Scenario Variant Generator (SVG) v0.11  by iyo & Gemini",
         "frame_scenario": "1. Select Scenario",
         "label_folder_path": "Folder Path:",
         "button_browse": "Browse...",
@@ -44,7 +44,7 @@ LANGUAGES = {
         "frame_targets_modify": "Targets to Modify (de-select player and/or helper characters)",
     },
     "JP": {
-        "window_title": "派生シナリオメーカー by iyo",
+        "window_title": "派生シナリオメーカー v0.11 by iyo & Gemini",
         "frame_scenario": "1. シナリオを選択",
         "label_folder_path": "フォルダパス:",
         "button_browse": "参照...",

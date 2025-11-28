@@ -1,8 +1,56 @@
 # config.py
 import os
+import sys
+from pathlib import Path
 
-SETTINGS_FILE = "settings.json"
-DEFAULT_KOVAAKS_PATH = r"C:\Program Files (x86)\Steam\steamapps\common\FPSAimTrainer\FPSAimTrainer\Saved\SaveGames\Scenarios"
+# Determine if we are running as a script or a frozen exe
+if getattr(sys, 'frozen', False):
+    APP_DIR = os.path.dirname(sys.executable)
+else:
+    APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
+SETTINGS_FILE = os.path.join(APP_DIR, "settings.json")
+
+def detect_kovaaks_path():
+    """Iterates through common Steam installation roots to find the scenarios folder."""
+    home = Path.home()
+    
+    # The fixed path inside any Steam Library
+    # Note: KovaaK's has a double 'FPSAimTrainer' folder structure
+    game_path_suffix = Path("steamapps/common/FPSAimTrainer/FPSAimTrainer/Saved/SaveGames/Scenarios")
+    
+    # Potential Steam Roots (The part that varies by OS/Drive)
+    steam_roots = [
+        # Windows - Standard
+        Path(r"C:\Program Files (x86)\Steam"),
+        # Windows - Common Secondary Drive
+        Path(r"D:\SteamLibrary"),
+        
+        # Linux - Native Steam (Debian/Arch/Fedora etc)
+        home / ".steam/steam",
+        home / ".local/share/Steam",
+        
+        # Linux - Flatpak (Steam Deck / Mint / PopOS)
+        home / ".var/app/com.valvesoftware.Steam/.local/share/Steam",
+        home / ".var/app/com.valvesoftware.Steam/.steam/steam",
+
+        # Linux - Snap (Ubuntu)
+        home / "snap/steam/common/.local/share/Steam",
+
+        # Linux - Custom Mounts
+        Path("/mnt/Games/SteamLibrary"),
+    ]
+
+    for root in steam_roots:
+        full_path = root / game_path_suffix
+        if full_path.exists():
+            return str(full_path)
+            
+    # Fallback: Return the standard Windows path even if it doesn't exist
+    return str(steam_roots[0] / game_path_suffix)
+
+DEFAULT_KOVAAKS_PATH = detect_kovaaks_path()
+
 
 # --- MASTER MODIFIER CONFIGURATION ---
 MODIFIER_CONFIG = {
