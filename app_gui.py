@@ -565,7 +565,12 @@ class VariantGeneratorApp:
         data = parse_scenario_file(full_path)
         if not data: print(f"Error loading {scenario_name}"); return
         player_name = data.get("player_profile_name")
-        bots = [name for name in data.get("character_profiles", {}).keys() if name != player_name]
+        bots = data.get("derived_bot_profiles", [])
+        if not bots:
+            player_name = data.get("player_profile_name")
+            bots = [name for name in data.get("character_profiles", {}).keys() if name != player_name]
+        
+        bots = [b for b in bots if b in data.get("character_profiles", {})]
         if not bots: print(f"No editable bots found in {scenario_name}"); return
         
         self.batch_queue[scenario_name] = {}
@@ -773,7 +778,13 @@ class VariantGeneratorApp:
             self.stat_vars["Timescale:"].set(self.loaded_scenario_data.get('global_properties', {}).get('Timescale', 'N/A'))
             duration = self.loaded_scenario_data.get('global_properties', {}).get('Timelimit', 'N/A'); self.stat_vars["Duration:"].set(f"{duration:.1f}s" if isinstance(duration, (int, float)) else "N/A")
             player_name = self.loaded_scenario_data.get("player_profile_name"); all_profiles = self.loaded_scenario_data.get("character_profiles", {})
-            target_names = [name for name in all_profiles.keys() if name != player_name]
+            target_names = self.loaded_scenario_data.get("derived_bot_profiles", [])
+            if not target_names:
+                target_names = [name for name in all_profiles.keys() if name != player_name]
+            
+            target_names = [name for name in target_names if name in all_profiles]
+            target_names.sort()
+            
             if target_names:
                 
                 # --- TRUNCATION (Safer Limit) ---

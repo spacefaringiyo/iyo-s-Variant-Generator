@@ -136,14 +136,30 @@ def parse_scenario_file(file_path):
         "scenario_name": "N/A", 
         "player_profile_name": None, 
         "character_profiles": {}, 
-        "global_properties": {} 
+        "global_properties": {},
+        "derived_bot_profiles": [],
     }
     
+    bot_characters_str = ""
+    added_bots_str = ""
+    bot_profile_map = {} 
+    in_bot_profile_section = False
+    current_bot_profile_name = None
+
     in_any_section = False
     
     for line in lines:
         line_strip = line.strip()
-        if line_strip.startswith('['): in_any_section = True
+        if line_strip.startswith('['): 
+            in_any_section = True
+
+            if line_strip.lower() == "[bot profile]":
+                in_bot_profile_section = True
+                current_bot_profile_name = None
+            else:
+                in_bot_profile_section = False
+            continue
+
         if '=' not in line: continue
         
         key_part, value_part = line.split('=', 1)
@@ -154,6 +170,8 @@ def parse_scenario_file(file_path):
         
         if not in_any_section:
             if key == "name": extracted_data["scenario_name"] = value
+            if key == "botcharacters": bot_characters_str = value
+            if key == "addedbots": added_bots_str = value
             
             # --- START UPDATE: Capture Type 1 & Type 2 Specifics ---
             if key == "scorepertime": extracted_data['global_properties']["ScorePerTime"] = float(value)
@@ -168,6 +186,27 @@ def parse_scenario_file(file_path):
             elif key == "scoreperdamage": extracted_data['global_properties']["ScorePerDamage"] = float(value)
             elif key == "scoreperkill": extracted_data['global_properties']["ScorePerKill"] = float(value)
             # --- END UPDATE ---
+
+        if in_bot_profile_section:
+                if key == "name": current_bot_profile_name = value
+                if key == "characterprofile" and current_bot_profile_name:
+                    bot_profile_map[current_bot_profile_name] = value
+
+        active_bots_raw = bot_characters_str if bot_characters_str else added_bots_str
+        active_bot_names = []
+        if active_bots_raw:
+            for raw_bot in active_bots_raw.split(';'):
+                if raw_bot.strip():
+                    clean_name = raw_bot.strip()
+                    if clean_name.lower().endswith(".bot"): clean_name = clean_name[:-4]
+                    active_bot_names.append(clean_name)
+
+            valid_targets = set()
+            for bot_name in active_bot_names:
+                char_profile = bot_profile_map.get(bot_name)
+                if char_profile: valid_targets.add(char_profile)
+
+            extracted_data["derived_bot_profiles"] = list(valid_targets)
 
     current_profile_name = None
     in_char_profile_section = False
@@ -335,7 +374,7 @@ def create_variant_file(base_data, folder_path, variant_type_key, new_value, var
         is_target_bot = False
         if in_char_profile_section:
             if key_lower == "name": current_profile_name = value_raw.strip()
-            if current_profile_name and current_profile_name != player_name and current_profile_name in selected_bots:
+            if current_profile_name and current_profile_name in selected_bots:
                 is_target_bot = True
 
         if is_target_bot:
